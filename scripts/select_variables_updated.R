@@ -8,6 +8,7 @@
 
 
 # Loading the required libraries using pacman
+# Pacman allows us to download libraries from CRAN directly
 pacman::p_load(survey, tidyverse, readr, haven) # loading all packages at once
 
 
@@ -68,3 +69,4 @@ analysisdes <- svydesign(
 
 # Summary of survey design
 summary(analysisdes)
+
