@@ -290,6 +290,6 @@ p <- ggplot(prevalence_results, aes(x = pct, y = label, fill = category)) +
 print(p)
 
 # Save as an image file
-ggsave("prevalence_chart.png", plot = p, width = 8, height = 4, dpi = 150)
+ggsave("prevalence_chart.png", plot = p, width = 12, height = 4, dpi = 150)
 
 cat("Done. Chart saved to prevalence_chart.png\n")
