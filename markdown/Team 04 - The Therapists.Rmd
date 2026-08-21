@@ -1,0 +1,1158 @@
+---
+title: "Co-occurring Adverse and Protective Factors in Adolescent Suicidality"
+subtitle: "2026 Black Internship Programme Technical Challenge using CDC 2023 National YRBS Survey Data"
+author: "The Therapists (Team 04) - Destiny Irimagha, Francis Asane, Albert Quarcoopome, Terence Makuvise, Aliya Ojiako, Bernard Kyaluzi (co-lead), Jacinta Chukwuedo (team lead)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true            # table of contents 
+    toc_float: true      # navigable table of contents 
+    code_folding: show   # option to show code chunks
+    theme: cosmo         # built-in polished theme
+    highlight: tango     # nicer code syntax coloring
+---
+
+```{r setup, include=FALSE}
+# Setting up all chunks
+knitr::opts_chunk$set(comment = "", include = TRUE)
+# Loading all packages for analysis using Package Manager (Pacman)
+pacman::p_load(reactable,
+               tidyverse,
+               survey)
+               
+```
+
+
+# 1. Introduction
+
+Suicide is a major cause of mortality among adolescents in the United States. Among high school-aged youth (14–18 years), suicide was the third leading cause of death in 2021, accounting for 1,952 deaths, or approximately one-fifth (18.6%) of all deaths within this age group (Verlenden *et al*., 2024). Mortality statistics, however, represent only the most severe endpoint of a broader spectrum of suicidal behaviour. Suicidal ideation, planning, and attempts occur at substantially higher frequencies than suicide deaths; in 2020 alone, an estimated 105,000 young people aged 14–18 years presented to emergency departments for self-harm injuries (Verlenden *et al*., 2024). This disparity between suicide mortality and the wider burden of suicidal behaviour highlights the importance of population-based survey measures of ideation, planning, and attempts, such as those collected through the Youth Risk Behavior Survey (YRBS). Such measures provide a broader population-level assessment of suicidality that cannot be captured through mortality data alone.
+
+**Research Aim**
+
+This analysis examines the co-occurrence of adverse experiences, protective factors, and health and behavioural correlates across four outcomes representing increasing severity of suicidality: seriously considering suicide, making a suicide plan, attempting suicide, and, among those who attempted suicide, sustaining an injury requiring treatment. 
+
+**Research Justification**
+
+Two bodies of literature provide the rationale for the analytical approach adopted in this report. First, adverse experiences frequently co-occur rather than occurring independently. The seminal Adverse Childhood Experiences (ACE) Study demonstrated that childhood adversities tend to cluster within individuals and that cumulative exposure is associated with adverse health outcomes, including suicide risk, beyond the effects attributable to individual experiences alone (Felitti *et al*., 1998). Subsequent meta-analytic evidence has extended these findings to suicidal behaviour, demonstrating a graded association between the accumulation of multiple adverse childhood experiences and increased risk of suicidal outcomes (Hughes *et al*., 2017). This evidence provides a direct rationale for examining patterns of co-occurrence and cumulative exposure rather than evaluating adverse experiences solely as independent predictors.
+
+Second, the analysis gives protective factors equal analytical consideration to adverse experiences, reflecting growing recognition that adolescent suicidality cannot be adequately understood through a risk-focused framework alone. A recent longitudinal cohort study of adolescent suicidality noted that, despite the importance of protective factors in reducing suicidal ideation and suicide attempts, research examining these factors remains comparatively limited (Bakken *et al*., 2025). Similarly, research adopting a holistic, multi-domain approach to adolescent suicide attempts has emphasised the importance of considering risk and protective factors concurrently across individual, psychological, and environmental domains (Haghish *et al*., 2024). Fonseca-Pedrero *et al.* (2022) likewise argue that examining risk and protective factors together is necessary to understand the complex and dynamic relationships underlying the development of suicidal behaviour, particularly the transition from suicidal ideation to suicidal action. Such relationships are unlikely to be adequately captured by models focused on individual factors in isolation.
+
+Taken together, these literature inform two central analytical decisions underpinning this report. First, the analysis examines the co-occurrence of multiple adverse, protective, and behavioural factors across the four suicidality outcomes rather than treating each factor as an isolated predictor. Second, protective factors are treated as analytically equivalent to adverse experiences, rather than as a secondary consideration within a predominantly risk-oriented framework. This approach allows the analysis to consider both vulnerability and potential sources of resilience within the same population.
+
+The central analytical framework throughout this report is **co-occurrence rather than causation**. The data was derived from a cross-sectional, self-reported survey; therefore, the presence of an association between a factor and a suicidality outcome does not establish that the factor causes, contributes to, or prevents that outcome. Accordingly, findings are interpreted in terms of associations throughout the report, consistent with the assessment brief's instruction to distinguish between stages of suicidality without assuming that they constitute a simple or deterministic progression.
+
+The analysis was undertaken as part of the **2026 HDRUK Black Internship Programme Technical Challenge** and uses data from the 2023 National Youth Risk Behavior Survey, a nationally representative survey of more than 20,000 U.S. high school students conducted by the Centers for Disease Control and Prevention (CDC).
+
+# 2. Data and Methods
+
+## 2.1 Dataset
+
+This analysis uses the 2023 National Youth Risk Behavior Survey (YRBS), conducted by the U.S. Centers for Disease Control and Prevention ([CDC YRBS Data and Documentation](https://www.cdc.gov/yrbs/data/index.html) — national dataset downloads. [2023 National YRBS Data User’s Guide](https://www.cdc.gov/yrbs/media/pdf/2023/2023_National_YRBS_Data_Users_Guide508.pdf) — variable definitions, weighting and analytic guidance. [CDC YRBSS Questionnaires](https://www.cdc.gov/yrbs/questionnaires/index.html) — full survey instruments and question wording). 
+
+The dataset comprises 20,103 valid questionnaires from students in grades 9-12 attending public and private schools across the United States, collected via a national three-stage cluster sample stratified by racial/ethnic concentration and metropolitan status, with schools and classrooms sampled within primary sampling units (counties or groups of counties). All analyses use CDCs supplied `weight` variable to correct for school- and student-level non-response and the deliberate oversampling of Black and Hispanic students, together with the `stratum` and `psu` variables to account for the clustered design when estimating standard errors and confidence intervals. 
+
+## 2.2 Variable Selection
+
+Four outcome variables were specified by the assessment brief and therefore required no independent justification: serious consideration of suicide `(QN27)`, suicide planning `(QN28)`, one or more suicide attempts `(QN29)`, and, among attempters, an attempt resulting in injury requiring medical treatment `(QN30)`, all measured over the preceding 12 months.
+
+The brief identifies bullying, violence, sexual violence, unstable housing, school connectedness, and parental monitoring as example adverse and protective factors, while explicitly describing the list as non-exhaustive. Guided by this framework and informed by a parallel literature review conducted by the team, the analysis therefore expanded the working variable set to include the following:
+
+**Adverse experiences (n=15)**: bullying at school and electronic bullying (`QN24`, `QN25`); forced intercourse, sexual violence, and sexual/physical dating violence (`QN19`-`QN22`, `QN88`); racial/ethnic discrimination (`QN23`); unstable housing (`QN86`); and a household-adversity cluster covering emotional and physical abuse, exposure to intimate partner violence in the home, parental substance use, parental mental illness, and parental incarceration (`QN89`-`QN91`, `QN100`-`QN102`).
+
+**Protective factors (n=5)**: school connectedness (`QN103`), parental monitoring (`QN104`), an adult meeting the student's basic needs (`QN99`), sufficient sleep (`QN85`), and self-reported grades (`QN87`).
+
+**Health and behaviour (n=11)**: current tobacco use (`qntb4`, a CDC-derived composite of cigarette, cigar, smokeless, and vapor use), binge drinking (`QN43`), current marijuana use (`QN48`), an illicit-drug-use composite (`qnillict`), weapon- and gun-carrying and physical fighting (`QN12`, `QN13`, `QN16`), persistent sadness/hopelessness (`QN26`), current poor mental health (`QN84`), and overweight/obese BMI category (`qnowt`, `qnobese`). Consistent with the brief's instruction to explore this domain "without implying causality," these variables are treated as behavioural/health correlates rather than adverse experiences.
+
+**Demographics (n=4)**: age (`q1`), sex (`q2`), grade (`q3`), and combined race/ethnicity (`raceeth`), included as descriptive covariates.
+
+## 2.3 Missing Data Approach
+
+Two distinct sources of missing data were identified across the dataset. First, structural (skip-pattern) missingness arises where a question was only administered to a subset of respondents by design, most notably `QN30`, whose denominator is restricted to students who reported an attempt, and `QN21`, restricted to students who reported dating. This missingness is reported alongside a reframed denominator rather than as a data-quality concern: QN30's valid N reflects the population it genuinely applies to (attempters), not incomplete coverage of all respondents.
+
+Secondly, ordinary item nonresponse reflects respondents who saw a question but did not answer it, or whose answer was set to missing under CDC's own logical-consistency edits. This is quantified transparently for every variable in the missingness audit (Section 3.3), and CDC's minimum-cell-size rule (unweighted N >= 30 per reported group) is applied consistently throughout, both as part of this audit and during quality control on the co-occurrence results.
+
+Both sources are handled identically at the computational level, i.e. per-comparison exclusion (na.rm = TRUE) rather than a single global listwise deletion, so that a respondent missing one variable is only excluded from estimates that specifically require it, not from the analysis as a whole. 
+
+# 3. Data Preparation
+
+## 3.1 Working Dataset
+```{r data preparation, message=FALSE, warning=FALSE}
+
+# Loading the data 
+# XXHqn.csv is the CDC-recoded file: QN# = dichotomized (1=Yes/2=No) versions of each question,
+# plus the derived composites and the survey design variables (weight, stratum, psu)
+df <- read.csv("XXHqn.csv")
+
+# Selecting the important variables
+analysis_df <- select(
+  df, q1, q2, q3, raceeth, QN12, QN13, QN16, QN19, QN20, QN21, QN22, QN23, QN24, 
+  QN25, QN26, QN27, QN28, QN29, QN30, QN43, QN48, QN84, QN85, QN86, QN87, QN88, 
+  QN89, QN90, QN91, QN99, QN100, QN101, QN102, QN103, QN104, qntb4, qnillict, 
+  qnowt, qnobese, weight, stratum, psu
+  )
+
+
+# Creating a binary variables vector of yes/no variables, 
+# except the four demographics and three design variables, which aren't binary items.
+binary_vars <- c(
+  "QN12","QN13","QN16","QN19","QN20","QN21","QN22","QN23","QN24",
+  "QN25","QN26","QN27","QN28","QN29","QN30","QN43","QN48","QN84","QN85",
+  "QN86","QN87","QN88","QN89","QN90","QN91","QN99","QN100","QN101","QN102",
+  "QN103","QN104","qntb4","qnillict","qnowt","qnobese"
+)
+
+# Relabelling the 1/2 binary variables as Yes/No factors for readability.
+# New labelled columns ("_f") are created rather than overwriting the originals.
+for (v in binary_vars) {                    # loops over every variable name in the list
+  analysis_df[[paste0(v, "_f")]] <- factor( # creates a new column named e.g. "QN27_f"
+    analysis_df[[v]],                       # takes the values from the original column, e.g. analysis_df$QN27
+    levels = c(1, 2),                       # tells R the two non-missing raw codes to expect
+    labels = c("Yes", "No")                 # maps them positionally: 1 as "Yes", 2 as "No"
+  )
+}
+
+```
+
+## 3.2 Creating a survey design object for weighted analysis
+
+```{r survey design object}
+
+# Creating Survey Design Object
+# Building the survey design object on the new analysis dataframe (with the factor columns)
+analysisdes <- svydesign(
+  id      = ~psu, # primary sampling unit, which defines the clustering
+  strata  = ~stratum, # stratification: race/ethicity and metro status area (rural/urban areas)
+  weights = ~weight, # corrects for nonresponse + oversampling
+  nest    = TRUE, # PSU codes repeat across strata; tells R to treat them as nested, not globally unique
+  data    = analysis_df
+)
+
+# Summary of survey design
+summary(analysisdes)
+
+```
+
+## 3.3 Variable Summary and Missingness Audit
+
+```{r variable summary}
+# Checking for missing values and weighted prevalence + CI
+
+variable_summary <- data.frame()
+
+# For every binary variable: how many valid (non-missing) responses, how
+# many missing, and what % missing. This is done to find the variable that's
+# failed CDC's minimum-cell-size rule (unweighted valid N < 30) 
+for (v in binary_vars) {
+  #count real vs. missing responses for this one variable.
+  n_valid     <- sum(!is.na(analysis_df[[v]]))
+  n_missing   <- sum(is.na(analysis_df[[v]]))
+  pct_missing <- round(100 * n_missing / nrow(analysis_df), 1)
+
+  # Weighted prevalence + 95% CI for this variable, unconditional on any other variable
+  est <- svyciprop(as.formula(paste0("~I(", v, "==1)")), analysisdes, na.rm = TRUE, method = "xlogit")
+  ci  <- confint(est) # pulls the 2.5%/97.5% bounds out of the est object
+  
+  # Packaging this variable's full row of results into the dataframe
+  row <- data.frame(
+    variable     = v,
+    n_valid      = n_valid,
+    n_missing    = n_missing,
+    pct_missing  = pct_missing,
+    weighted_pct = round(as.numeric(est) * 100, 1),
+    ci_low       = round(ci[1] * 100, 1),
+    ci_high      = round(ci[2] * 100, 1)
+  )
+  
+  # Adding this variable's row onto the bottom of the growing table
+  variable_summary <- rbind(variable_summary, row)
+}
+
+```
+
+```{r variable labels lookup table}
+# var_labels: readable names for all variables
+var_labels <- c(
+  QN12 = "Carried a weapon at school", QN13 = "Carried a gun",
+  QN16 = "Physical fight", QN19 = "Forced sexual intercourse",
+  QN20 = "Sexual violence (12mo)", QN21 = "Sexual dating violence",
+  QN22 = "Physical dating violence", QN23 = "Racial/ethnic discrimination",
+  QN24 = "Bullied at school", QN25 = "Electronically bullied",
+  QN26 = "Sad/hopeless", QN43 = "Binge drinking",
+  QN48 = "Current marijuana use", QN84 = "Mental health not good",
+  QN85 = "Sufficient sleep", QN86 = "Unstable housing",
+  QN87 = "Good grades", QN88 = "Adult sexual abuse",
+  QN89 = "Parent insulted them", QN90 = "Parent physically hurt them",
+  QN91 = "Parents hit each other", QN99 = "Basic needs met",
+  QN100 = "Parent substance use", QN101 = "Parent mental illness",
+  QN102 = "Parent incarcerated", QN103 = "School connectedness",
+  QN104 = "Parental monitoring", qntb4 = "Current tobacco use",
+  qnillict = "Illicit drug use", qnowt = "Overweight", qnobese = "Obese",
+  QN27 = "Considered suicide", QN28 = "Made a plan",
+  QN29 = "Attempted suicide", QN30 = "Injurious attempt"
+)
+
+outcome_labels  <- c(QN27 = "Considered suicide", QN28 = "Made a plan",
+                     QN29 = "Attempted", QN30 = "Injurious attempt")
+protective_vars <- c("QN85", "QN87", "QN99", "QN103", "QN104")
+behaviour_vars <- c("QN12","QN13","QN16","QN26","QN43","QN48","QN84",
+                    "qntb4","qnillict","qnowt","qnobese")
+outcome_vars <- c("QN27", "QN28", "QN29", "QN30")
+predictor_vars <- setdiff(binary_vars, outcome_vars)
+
+# Category showing which of Outcome/Adverse/Protective/Behavior each variable belongs to
+category_lookup <- c(
+  QN27="Outcome",QN28="Outcome",QN29="Outcome",QN30="Outcome",
+  QN24="Adverse",QN25="Adverse",QN86="Adverse",QN19="Adverse",QN20="Adverse",
+  QN21="Adverse",QN22="Adverse",QN23="Adverse",QN88="Adverse",QN89="Adverse",
+  QN90="Adverse",QN91="Adverse",QN100="Adverse",QN101="Adverse",QN102="Adverse",
+  QN103="Protective",QN104="Protective",QN99="Protective",QN85="Protective",QN87="Protective",
+  QN12="Behavior",QN13="Behavior",QN16="Behavior",QN26="Behavior",QN84="Behavior",
+  QN43="Behavior",QN48="Behavior",qntb4="Behavior",qnillict="Behavior",qnowt="Behavior",qnobese="Behavior"
+) 
+
+```
+
+
+```{r missingness across all variables}
+
+# General missingness chart
+missing_df <- variable_summary
+
+# Swap raw codes for readable labels
+missing_df$variable_name <- var_labels[missing_df$variable]
+
+# case_when checks each line in order and stops at the first match: Protective and
+# Behavioural are checked explicitly; anything left over (i.e. every
+# remaining predictor) falls through to "Adverse" via the final
+# TRUE, which acts as a catch-all default.
+missing_df$category <- dplyr::case_when(
+  missing_df$variable %in% outcome_vars    ~ "Outcome",
+  missing_df$variable %in% protective_vars ~ "Protective",
+  missing_df$variable %in% behaviour_vars   ~ "Behavioural",
+  TRUE                                      ~ "Adverse"
+)
+
+# Sort bars by missingness, worst first. it reads as a ranked list rather than alphabetical order
+missing_df$variable_name <- reorder(missing_df$variable_name, missing_df$pct_missing)
+
+p_missing <- ggplot(missing_df, aes(x = variable_name, y = pct_missing, fill = category)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = paste0(pct_missing, "%")), hjust = -0.15, size = 3) +  # % label just past the bar
+  coord_flip() +
+  scale_fill_manual(values = c("Outcome" = "black", "Protective" = "#2E7D32",
+                                "Adverse" = "#C62828", "Behavioural" = "#F57C00")) +
+  scale_y_continuous(limits = c(0, max(missing_df$pct_missing) * 1.15)) +  # headroom so labels aren't clipped
+  labs(title = "Missingness Across All Selected Variables", x = NULL, y = "% missing", fill = NULL) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "bottom")
+
+ggsave("overall_missingness.png", p_missing, width = 8, height = 9, dpi = 150)
+
+```
+
+![](overall_missingness.png)
+
+Missingness ranges from 1.0% (`QN24`, `QN25`) to 46.0% (`QN104`), with the highest-missingness variables found in the household-adversity, connectedness, and monitoring cluster. CDC's minimum-cell-size convention (unweighted N >= 30 per reported group) is applied throughout the analysis.
+
+```{r point estimate and CI}
+
+# Forest plot showing all weighted prevalences
+forest_df <- variable_summary # plotting data
+forest_df$label <- var_labels[forest_df$variable] # swap variable code for readable name
+forest_df$category <- category_lookup[forest_df$variable] # tag each row with its category for coloring
+forest_df$label <- reorder(forest_df$label, forest_df$weighted_pct) # Sort variables top-to-bottom by their weighted prevalence
+
+point <- ggplot(forest_df, aes(x = weighted_pct, y = label, color = category)) +
+  geom_errorbar(aes(xmin = ci_low, xmax = ci_high), height = 0.3) + # the CI whisker, one per variable
+  geom_point(size = 2) + # the point estimate
+  scale_color_manual(values = c(Outcome="black", Adverse="#C62828", Protective="#2E7D32", Behavior="#F57C00")) +
+  labs(title = "Weighted prevalence: Point estimate with 95% CI",
+       x = "Weighted %", y = NULL, color = NULL) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "top")
+
+ ggsave("forest.png", width = 9, height = 11, dpi = 150)
+ 
+```
+
+![](forest.png)
+
+Weighted prevalence across the variables ranges from 2.0% (`QN91`, parents hit each other) to 86.3% (`QN99`, basic needs met), each reported with its own 95% confidence interval. These weighted estimates describe how common a given experience or behaviour is in the population, since they correct for the survey's deliberate oversampling of Black and Hispanic students and for nonresponse.
+
+
+## 3.4 Justification of Selected Variables
+
+**Please see appendix for full details on variable justification.**
+
+```{r variable distributions binary}
+# Visualising the weighted prevalence and missingness across variable groups
+
+# Prevalence chart: works for any variable group 
+plot_group_prevalence <- function(vars, labels, title, filename, data = variable_summary) {
+  df <- data[data$variable %in% vars, ]
+  df$label <- factor(labels[df$variable], levels = labels[vars])  # locks order to how vars was written
+
+  p <- ggplot(df, aes(x = label, y = weighted_pct)) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.15, linewidth = 0.6) +
+    geom_point(size = 4, color = "#4472C4") +
+    # Text anchored at ci_high (not weighted_pct) to keep the label clear of the whisker
+    geom_text(aes(x = label, y = ci_high, label = paste0(weighted_pct, "%")),
+              hjust = -0.15, size = 3.8) +
+    coord_flip() +   # horizontal for better readability
+    scale_y_continuous(limits = c(0, max(df$ci_high) * 1.3)) +   # headroom for the label
+    labs(title = title, subtitle = "Weighted prevalence with 95% CI", x = NULL, y = "Weighted %") +
+    theme_minimal(base_size = 12)
+  
+  # Save image
+   ggsave(filename, p, width = 7, height = 4.5, dpi = 150)
+}
+
+# Missingness chart: works for any variable group 
+plot_group_missingness <- function(vars, labels, title, filename, data = variable_summary) {
+  df <- data[data$variable %in% vars, ]
+  df$label <- factor(labels[df$variable], levels = labels[vars])
+
+  p <- ggplot(df, aes(x = label, y = pct_missing)) +
+    geom_col(fill = "#C62828", width = 0.6) +
+    geom_text(aes(label = paste0(pct_missing, "%")), hjust = -0.15, size = 3.8) +
+    coord_flip() +
+    scale_y_continuous(limits = c(0, max(df$pct_missing) * 1.25)) +
+    labs(title = title, subtitle = "Missingness", x = NULL, y = "% missing") +
+    theme_minimal(base_size = 12)
+  
+  # Save image
+  ggsave(filename, p, width = 7, height = 4.5, dpi = 150)
+}
+
+```
+
+
+```{r variable distribution images}
+
+# Calling the function for all groups
+
+protective_labels <- c(QN85="Sufficient sleep", QN87="Good grades", QN99="Basic needs met",
+                        QN103="School connectedness", QN104="Parental monitoring")
+plot_group_prevalence(names(protective_labels), protective_labels,
+                       "Protective factors", "protective_prevalence.png")
+plot_group_missingness(names(protective_labels), protective_labels,
+                        "Protective factors", "protective_missingness.png")
+
+sexual_labels <- c(QN19="Forced intercourse", QN20="Sexual violence", QN21="Sexual dating violence",
+                    QN88="Adult sexual abuse")
+plot_group_prevalence(names(sexual_labels), sexual_labels,
+                       "Sexual/dating violence", "sexual_prevalence.png")
+plot_group_missingness(names(sexual_labels), sexual_labels,
+                        "Sexual/dating violence", "sexual_missingness.png")
+
+community_labels <- c(QN22="Physical dating violence", QN23="Discrimination", QN24="Bullied at school",
+                       QN25="Electronically bullied", QN86="Unstable housing")
+plot_group_prevalence(names(community_labels), community_labels,
+                       "School/community adversity", "community_prevalence.png")
+plot_group_missingness(names(community_labels), community_labels,
+                        "School/community adversity", "community_missingness.png")
+
+ace_labels <- c(QN89="Parent insulted", QN90="Parent hit", QN91="Parents hit each other",
+                QN100="Parent substance use", QN101="Parent mental illness", QN102="Parent incarcerated")
+plot_group_prevalence(names(ace_labels), ace_labels,
+                       "Household dysfunction", "household_prevalence.png")
+plot_group_missingness(names(ace_labels), ace_labels,
+                        "Household dysfunction", "household_missingness.png")
+
+distress_labels <- c(QN12="Carried a weapon", QN13="Carried a gun", QN16="Physical fight",
+                      QN26="Sad/hopeless", QN84="Poor mental health")
+plot_group_prevalence(names(distress_labels), distress_labels,
+                       "Violence-adjacent & mental distress", "distress_prevalence.png")
+plot_group_missingness(names(distress_labels), distress_labels,
+                        "Violence-adjacent & mental distress", "distress_missingness.png")
+
+substance_labels <- c(QN43="Binge drinking", QN48="Marijuana use", qntb4="Tobacco use",
+                       qnillict="Illicit drug use", qnowt="Overweight", qnobese="Obese")
+plot_group_prevalence(names(substance_labels), substance_labels,
+                       "Substance use & weight status", "substance_prevalence.png")
+plot_group_missingness(names(substance_labels), substance_labels,
+                        "Substance use & weight status", "substance_missingness.png")
+
+```
+
+```{r demographics weighted prevalence}
+# FUnction to plot weighted composition of demographics
+plot_demo_prevalence <- function(var, value_labels, title, filename, design = analysisdes) {
+  form <- as.formula(paste0("~factor(", var, ")"))
+
+  # svymean on a factor gives the weighted % of the sample in each category.
+  # It is the multi-category equivalent of svyciprop's single
+  # Yes/No rate. confint() pulls the per-category CIs out the same way.
+  est <- svymean(form, design, na.rm = TRUE)
+  ci  <- confint(est)
+
+  df <- data.frame(
+    level   = sub(paste0("factor\\(", var, "\\)"), "", names(est)),  # strips the "factor(raceeth)" prefix R adds to each name
+    pct     = as.numeric(est) * 100,
+    ci_low  = ci[,1] * 100,
+    ci_high = ci[,2] * 100
+  )
+  df$label <- value_labels[df$level]                    # swap raw codes for readable names
+  df$label <- factor(df$label, levels = value_labels)    # keep them in a sensible order, not alphabetical
+
+  p <- ggplot(df, aes(x = label, y = pct)) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.15, linewidth = 0.6) +
+    geom_point(size = 4, color = "#4472C4") +
+    geom_text(aes(x = label, y = ci_high, label = paste0(round(pct,1), "%")),
+              hjust = -0.15, size = 3.8) +
+    coord_flip() +
+    scale_y_continuous(limits = c(0, max(df$ci_high, na.rm=TRUE) * 1.3)) +
+    labs(title = title, subtitle = "Weighted % of sample, by category (95% CI)", x = NULL, y = "Weighted %") +
+    theme_minimal(base_size = 12)
+
+  ggsave(filename, p, width = 7, height = 4.5, dpi = 150)
+}
+
+```
+
+
+```{r generating images}
+# Calling function to generate images for each demographic
+age_labels <- c("1"="<=12yo","2"="13yo","3"="14yo","4"="15yo","5"="16yo","6"="17yo","7"="18+yo")
+plot_demo_prevalence("q1", age_labels, "Age: Weighted Composition", "age_prevalence.png")
+
+sex_labels <- c("1"="Female","2"="Male")
+plot_demo_prevalence("q2", sex_labels, "Sex: Weighted Composition", "sex_prevalence.png")
+
+grade_labels <- c("1"="9th","2"="10th","3"="11th","4"="12th","5"="Ungraded/other")
+plot_demo_prevalence("q3", grade_labels, "Grade: Weighted Composition", "grade_prevalence.png")
+
+race_labels <- c("1"="AI/AN","2"="Asian","3"="Black","4"="NH/PI","5"="White",
+                  "6"="Hispanic","7"="Multi-Hispanic","8"="Multi-non-Hispanic")
+plot_demo_prevalence("raceeth", race_labels, "Race/Ethnicity: Weighted Composition", "race_prevalence.png")
+```
+```{r demographics missingness}
+demo_missing <- data.frame(
+  variable = c("q1","q2","q3","raceeth"),
+  pct_missing = c(round(100*mean(is.na(analysis_df$q1)),1), # percentage of missing
+                  round(100*mean(is.na(analysis_df$q2)),1),
+                  round(100*mean(is.na(analysis_df$q3)),1),
+                  round(100*mean(is.na(analysis_df$raceeth)),1))
+)
+demo_labels <- c(q1="Age", q2="Sex", q3="Grade", raceeth="Race/ethnicity") # Readable labels
+demo_missing$label <- factor(demo_labels[demo_missing$variable], levels = demo_labels) # Lock order in a sensible order
+
+p <- ggplot(demo_missing, aes(x = label, y = pct_missing)) +
+  geom_col(fill = "#C62828", width = 0.6) +
+  geom_text(aes(label = paste0(pct_missing, "%")), hjust = -0.15, size = 3.8) +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, max(demo_missing$pct_missing) * 1.4)) +
+  labs(title = "Demographics", subtitle = "Missingness", x = NULL, y = "% missing") +
+  theme_minimal(base_size = 12)
+# Save image
+ggsave("demographics_missingness.png", p, width = 7, height = 3.5, dpi = 150)
+
+```
+
+```{r outcomes by sex}
+
+outcome_vars <- c("QN27","QN28","QN29","QN30")   # loop over all four outcomes
+outcome_labels <- c(QN27="Considered suicide", QN28="Made a plan",
+                     QN29="Attempted", QN30="Injurious attempt")
+
+sex_results <- data.frame()
+
+# Sex: has 2 categories, so svyttest (t-test) to compare across groups applies
+for (o in outcome_vars) {
+
+  # Builds the outcome formula dynamically as text, e.g. "~I(QN27==1)", since o is a changing
+  # string on each pass through the loop, not a fixed name typed by hand.
+  form <- as.formula(paste0("~I(", o, "==1)"))
+
+  # svyby splits the design by q2 (sex) and runs svyciprop separately within each group
+  # This gives the weighted % + CI for the current outcome,
+  # once for females, once for males. vartype="ci" tells it
+  # to return confidence interval bounds, not just standard errors.
+  group <- svyby(form, ~q2, analysisdes, svyciprop, vartype="ci", na.rm=TRUE)
+
+  # svyttest needs the formula built slightly differently: as a single
+  # text string combining both sides of the comparison ("outcome ~ group"),
+  # not split into two separate formula objects the way svyby needed.
+  # factor(q2) tells R to treat sex as a categorical grouping variable,
+  # not a number to average
+  ttest <- svyttest(as.formula(paste0("I(", o, "==1) ~ factor(q2)")), analysisdes)
+
+  rows <- data.frame(
+    outcome = o,
+    sex     = c("Female","Male"),
+    pct     = group[,2]*100,
+    ci_low  = group$ci_l*100,
+    ci_high = group$ci_u*100,
+    p_value = unname(ttest$p.value)
+  )
+  sex_results <- rbind(sex_results, rows) 
+}
+
+```
+
+
+
+```{r outcomes by race}
+# Race/Ethnicity: has 8 categories, so svychisq applies, not svyttest
+race_labels <- c("1"="AI/AN","2"="Asian","3"="Black","4"="NH/PI","5"="White",
+                  "6"="Hispanic","7"="Multi-Hisp","8"="Multi-non-Hisp")
+race_results <- data.frame()
+
+for (o in outcome_vars) {
+  form <- as.formula(paste0("~I(", o, "==1)"))
+
+  # Same as above, just splitting by raceeth
+  # Since raceeth has 8 levels, this produces 8 rows 
+  # (one prevalence estimate per race/ethnicity category) instead of 2.
+  group8 <- svyby(form, ~raceeth, analysisdes, svyciprop, vartype="ci", na.rm=TRUE)
+
+  # svyttest is built specifically for a two-group comparison. It has
+  # no way to handle 8 categories at once. svychisq used here (Rao-Scott) 
+  # statistic="F" is the survey package's default correction.
+  chi <- svychisq(as.formula(paste0("~", o, "+raceeth")), analysisdes, statistic="F")
+
+  rows <- data.frame(
+    outcome = o,
+    race    = race_labels[as.character(group8$raceeth)],
+    pct     = group8[,2]*100,
+    ci_low  = group8$ci_l*100,
+    ci_high = group8$ci_u*100,
+    p_value = chi$p.value
+  )
+  race_results <- rbind(race_results, rows)
+}
+
+```
+
+```{r plotting the outcome by demo images}
+# Sex, all 4 outcomes, one panel each
+sex_results$outcome_label <- factor(outcome_labels[sex_results$outcome], levels = outcome_labels[outcome_vars])
+
+q1 <- ggplot(sex_results, aes(x = sex, y = pct, fill = sex)) +
+  geom_col(width = 0.6) +
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.15) +
+  # Label anchored at ci_high (top of the whisker)
+  geom_text(aes(y = ci_high, label = paste0(round(pct,1), "%")), vjust = -0.6, size = 3.5) +
+  facet_wrap(~outcome_label, scales = "free_y", ncol = 2) +
+  scale_fill_manual(values = c(Female = "#C2185B", Male = "#1565C0")) +
+  # Extra headroom above the highest point so the label has room to sit
+  # above the whisker without getting clipped by the panel edge.
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.25))) +
+  labs(title = "Suicidality Outcomes by Sex", subtitle = "Weighted % with 95% CI, all four outcomes",
+       x = NULL, y = "Weighted %", fill = NULL) +
+  theme_minimal(base_size = 11) + theme(legend.position = "top")
+# Save image
+ggsave("demo_sex_fixed.png", q1, width = 9, height = 7, dpi = 150)
+
+# Race/ethnicity, all 4 outcomes, one panel each
+race_results$outcome_label <- factor(outcome_labels[race_results$outcome], levels = outcome_labels[outcome_vars])
+
+q2 <- ggplot(race_results, aes(x = reorder(race, pct), y = pct)) +
+  geom_col(fill = "#4472C4", width = 0.6) +
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.15) +
+  geom_text(aes(y = ci_high, label = paste0(round(pct,1), "%")), hjust = -0.15, size = 3) +
+  coord_flip() +
+  facet_wrap(~outcome_label, scales = "free_x", ncol = 2) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.3))) +
+  labs(title = "Suicidality Outcomes by Race/Ethnicity", subtitle = "Weighted % with 95% CI, all four outcomes",
+       x = NULL, y = "Weighted %") +
+  theme_minimal(base_size = 10)
+# Save image
+ggsave("demo_race_fixed.png", q2, width = 10, height = 8, dpi = 150)
+
+```
+
+
+
+# 4. Describing the Outcomes
+
+```{r describe-outcomes}
+
+# Readable labels for the four outcomes 
+outcome_labels <- c(QN27="Considered\nsuicide", QN28="Made\na plan",
+                     QN29="Attempted", QN30="Injurious\nattempt")
+
+# Filtering variable_summary table down to just the 4 outcome rows
+outcome_summary <- variable_summary[variable_summary$variable %in% outcome_vars, ]
+outcome_summary$label <- outcome_labels[outcome_summary$variable]
+
+# Arrange the display order to ideation -> plan -> attempt -> injury
+outcome_summary$label <- factor(outcome_summary$label, levels = outcome_labels[outcome_vars])
+
+# Figure 1: weighted prevalence with CI
+p1 <- ggplot(outcome_summary, aes(x = label, y = weighted_pct)) +
+  geom_col(fill = "#4472C4", width = 0.6) +
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.15) +   # the CI whisker
+  geom_text(aes(label = paste0(weighted_pct, "%")), vjust = -3.0, size = 4) +  # % printed above each bar
+  labs(title = "Suicidality Outcomes Among US High School Students, 2023",
+       subtitle = "Weighted prevalence with 95% confidence intervals",
+       x = NULL, y = "Weighted %") +
+  ylim(0, max(outcome_summary$ci_high) * 1.3) +   # headroom so the top CI whisker + label aren't clipped
+  theme_minimal(base_size = 13)
+
+# Save image
+ggsave("outcome_prevalence.png", p1, width = 7, height = 5, dpi = 150)
+
+
+# Figure 2: missingness by outcome
+p2 <- ggplot(outcome_summary, aes(x = label, y = pct_missing)) +
+  geom_col(fill = "#C62828", width = 0.6) +
+  geom_text(aes(label = paste0(pct_missing, "%")), vjust = -0.5, size = 4) +
+  labs(title = "Missingness by Outcome", x = NULL, y = "% missing") +
+  ylim(0, max(outcome_summary$pct_missing) * 1.2) +
+  theme_minimal(base_size = 13)
+
+# Save image
+ggsave("outcome_missingness.png", p2, width = 7, height = 5, dpi = 150)
+
+```
+
+![](outcome_prevalence.png)
+
+- Weighted prevalence for the four suicidality outcomes: considered suicide 20.4% (95% CI 18.7–22.3%), made a plan 16.4% (14.4–18.6%), attempted 9.5% (8.4–10.7%), and injurious attempt 2.3% (1.6–3.3%), each independently estimated with its own confidence interval.
+
+- **All outcomes estimates match CDC's own published Appendix C figure** for this exact question exactly, serving as a validation check on the analysis pipeline before the remaining results are interpreted.
+
+- These four outcomes are reported as distinct measures of suicidality, in the order the brief itself uses them, without assuming any one outcome leads to, predicts, or is a subset of another.
+
+![](outcome_missingness.png)
+
+- Injurious attempt has a substantially smaller and structurally different denominator (N=14,635) than the other three outcomes, since this question is only presented to students who reported an attempt. The 2.3% figure should be read as roughly 24% of **attempters** specifically, not 2.3% of all students.
+
+- Missingness varies meaningfully across the four: considered suicide and attempted have the lowest missingness (2.2%, 3.8%), made a plan is somewhat higher (8.6%), and injurious attempt is markedly higher (27.2%). This last figure is structural, and is tied directly to the attempt-only denominator above and not a data-quality concern.
+
+
+# 5. Co-occurrence Analysis
+
+## 5.1 Cross Tabs of Every Outcome by Every Predictor
+
+```{r cooccurrence cross tabs}
+
+# Building a comparison function
+# For any outcome + predictor pair, this function returns: weighted % in the
+# "Yes" group, weighted % in the "No" group, the percentage-point gap,
+# the unweighted N in each group, and a survey design-adjusted significance test.
+
+# recall binary vars from when a new dataset was created
+outcome_vars   <- c("QN27", "QN28", "QN29", "QN30") # outcome variables
+predictor_vars <- setdiff(binary_vars, outcome_vars) # predictor variables
+
+
+# The function
+# Takes one outcome, one predictor, and the survey design, and returns a
+# single row describing how strongly they're associated.
+test_cooccurrence <- function(outcome_var, predictor_var, design) {
+  
+  # design$variables is the actual dataframe living inside the design
+  # object. [[predictor_var]] pulls out one column from it by name
+  des_yes <- subset(design, design$variables[[predictor_var]] == 1)  # everyone who answered "Yes" to the predictor
+  des_no  <- subset(design, design$variables[[predictor_var]] == 2)  # everyone who answered "No"
+  
+  # svyciprop needs a formula, not just a column name, i.e. it needs
+  # ~I(QN27 == 1), not just the text "QN27". Since outcome_var is a changing text string,
+  # paste0() builds that exact piece of text first (e.g. "~I(QN27 == 1)"),
+  # and as.formula() then converts that text into a real formula R can use.
+  form <- as.formula(paste0("~I(", outcome_var, " == 1)"))
+  
+  pct_yes <- svyciprop(form, des_yes, na.rm = TRUE, method = "xlogit")  # weighted % with the outcome, Yes group
+  pct_no  <- svyciprop(form, des_no,  na.rm = TRUE, method = "xlogit")  # weighted % with the outcome, No group
+  
+  n_yes <- as.numeric(unwtd.count(form, des_yes))  # how many non-missing responses back up pct_yes
+  n_no  <- as.numeric(unwtd.count(form, des_no))   # same, for pct_no
+  
+  # Same paste0()/as.formula() format as above, but building a formula for
+  # the chi-square test instead, i.e. "~QN27 + QN24".
+  chisq_form <- as.formula(paste0("~", outcome_var, " + ", predictor_var))
+  
+  # The design-adjusted association test (Rao-Scott correction) tests
+  # whether outcome and predictor are related, accounting for the survey's
+  # weighting and clustering.
+  test <- svychisq(chisq_form, design, statistic = "F")
+  
+  # Packaging everything computed above into one tidy row to return.
+  data.frame(
+    outcome       = outcome_var,                                          # which outcome this row is about
+    predictor     = predictor_var,                                        # which predictor this row is about
+    pct_given_yes = round(as.numeric(pct_yes) * 100, 1),                  # weighted % with outcome, among "Yes" group
+    pct_given_no  = round(as.numeric(pct_no) * 100, 1),                   # weighted % with outcome, among "No" group
+    diff_pct      = round((as.numeric(pct_yes) - as.numeric(pct_no)) * 100, 1), # the gap between the two groups
+    n_yes_group   = n_yes,                                                # unweighted sample size, "Yes" group
+    n_no_group    = n_no,                                                 # unweighted sample size, "No" group
+    p_value       = signif(unname(test$p.value), 3)
+  )
+}
+
+
+# Calling the function in a loop for each outcome by each predictor
+
+# Table size - one row per combination, so number of outcomes * number of predictors.
+n_rows <- length(outcome_vars) * length(predictor_vars)
+
+# Building an empty results table first with the right size, and every
+# column set to the right data type. Every value would be overridden when the loop runs.
+cooccurrence_results <- data.frame(
+  outcome       = character(n_rows),
+  predictor     = character(n_rows),
+  pct_given_yes = numeric(n_rows),
+  pct_given_no  = numeric(n_rows),
+  diff_pct      = numeric(n_rows),
+  n_yes_group   = numeric(n_rows),
+  n_no_group    = numeric(n_rows),
+  p_value       = numeric(n_rows)
+)
+
+# row_i keeps track of the row to be filled in next. It starts
+# at row 1, and 1 is added to it every time a combination is finished.
+row_i <- 1
+
+# Outer loop: go through each of the 4 outcomes, one at a time.
+for (o in outcome_vars) {
+  
+  # Inner loop: for the current outcome, go through every predictor, one at a time.
+  for (p in predictor_vars) {
+    
+    # Running the function on this one specific outcome-predictor pair.
+    one_result <- test_cooccurrence(o, p, analysisdes)
+    
+    # Copying the one-row result into row number row_i of the results table.
+    cooccurrence_results[row_i, ] <- one_result
+    
+    # Moving on to the next row, ready for the next pair.
+    row_i <- row_i + 1
+  }
+}
+
+```
+
+```{r performing QC}
+
+# Performing a QC
+# checking each cross tab for the CDC minimum group count (N >= 30),
+# and also checking for significant results per outcome.
+
+
+# CDC minimum count
+# pmin() compares n_yes_group and n_no_group pairwise, row by row, and
+# keeps the smaller of the two, i.e. one number per row.
+group_mins <- pmin(cooccurrence_results$n_yes_group, cooccurrence_results$n_no_group)
+
+
+# The  overall minimum across the whole table.
+overall_min <- min(group_mins)
+cat("Minimum group size:", overall_min, "\n\n")
+
+# Row with the minimum - group_mins == overall_min gives a
+# TRUE/FALSE for every row, and using that to index cooccurrence_results
+# keeps only the rows where it's TRUE.
+cat("Row with the minimum:\n")
+paste0(cooccurrence_results[group_mins == overall_min,
+                           c("outcome", "predictor", "n_yes_group", "n_no_group")])
+
+
+# Least significant results, grouped by outcomes
+
+# order(outcome, -p_value) sorts the table two ways at once: first by
+# outcome (alphabetically, so all QN27 rows group together, then QN28,
+# etc.), and by p_value from largest to smallest 
+# (the minus sign reverses the normal smallest-first order).
+all_nonsig <- cooccurrence_results[cooccurrence_results$p_value >= 0.05, ]
+all_nonsig <- all_nonsig[order(all_nonsig$outcome, -all_nonsig$p_value), ]
+
+```
+
+Of the 124 outcome–predictor comparisons presented in the cross-tabulation analysis, **118 (95.2%) were statistically significant at p < 0.05**. The six non-significant associations were concentrated around `qnowt`/`qnobese`, representing weight-status measures: `qnowt` was non-significant across all four outcomes, while `qnobese` was non-significant for two outcomes, namely suicide attempt and injurious suicide attempt.
+
+The smallest unweighted cell count across the complete set of cross-tabulations was 300 (`QN30 × QN91`), substantially exceeding the CDC's minimum cell-size threshold of ≥30. This indicates that none of the comparisons was based on an extremely small unweighted subgroup.
+
+Given the large sample size (**N = 20,103**) and the high proportion of statistically significant comparisons, statistical significance alone provides limited discrimination between substantively important and negligible associations. With a sample of this magnitude, relatively small differences may achieve statistical significance despite having limited practical or substantive importance (Sullivan & Feinn, 2012; Wasserstein & Lazar, 2016). Accordingly, **effect size, implemented here as the percentage-point difference between groups, is used throughout the remainder of the analysis to prioritise and rank findings**. This approach places greater emphasis on the magnitude of observed associations and their substantive relevance rather than on statistical detectability alone.
+
+## 5.2 Ranked Findings, by Outcome
+
+```{r ranked charts}
+
+# Visualising outcomes, with predictors ranked by effect size.
+
+# A list to keep each finished plot and each ranked table
+plot_list <- list()
+table_list <- list()
+
+# Folder to save images
+dir.create("outcomes", showWarnings = FALSE)
+
+for (o in outcome_vars) {
+  
+  # Keeping just this one outcome's rows 
+  this_outcome <- cooccurrence_results[cooccurrence_results$outcome == o, ]
+  
+  # Swapping raw codes for readable labels
+  this_outcome$variable_name <- var_labels[this_outcome$predictor]
+
+  # case_when checks each line in order and stops at the first match: Protective and
+  # Behavioral are checked explicitly; anything left over (i.e. every
+  # remaining predictor) falls through to "Adverse" via the final
+  # TRUE, which acts as a catch-all default.
+  this_outcome$category <- dplyr::case_when(
+    this_outcome$predictor %in% protective_vars ~ "Protective",
+    this_outcome$predictor %in% behaviour_vars   ~ "Behavioural",
+    TRUE                                         ~ "Adverse"
+  )
+  
+  # Sorting the variable names by effect size.
+  this_outcome$variable_name <- reorder(this_outcome$variable_name, this_outcome$diff_pct)
+  
+  # Adding table to list
+  table_list[[o]] <- this_outcome
+  
+  p <- ggplot(this_outcome, aes(x = variable_name, y = diff_pct, fill = category)) +
+    geom_col(width = 0.7) +
+    geom_hline(yintercept = 0, linewidth = 0.3) +
+    coord_flip() +
+    scale_fill_manual(values = c("Protective" = "#2E7D32", "Adverse" = "#C62828", "Behavioural" = "#F57C00")) +
+    labs(title = outcome_labels[o], x = NULL, y = "Percentage-point difference", fill = NULL) +
+    theme_minimal(base_size = 10) +
+    theme(legend.position = "bottom")
+  
+  # Save each outcome's chart
+  ggsave(paste0("outcomes/chart_", o, ".png"), plot = p, width = 7, height = 7, dpi = 150)
+  
+  # Add charts to list
+  plot_list[[o]] <- p
+}
+
+```
+
+
+
+**Considered Suicide/Ideation Outcome**: this category is led by **sad/hopeless** (**+40.1** points), followed closely by **adult sexual abuse** (**+37.1**) and **forced intercourse** (**+36.3**). This shows that ideation co-occurs most strongly with acute psychological distress and sexual victimisation specifically, well ahead of the household and behavioral factors further down the ranking. On the protective side, **school connectedness** (**-12.1**) and **sufficient sleep** (**-11.8**) lead, and are both notably smaller in magnitude than any of the top three adverse factors.
+
+![](outcomes/chart_QN27.png)
+
+**Made A Plan Outcome**: this outcome shows a similar profile. It is also led by **sad/hopeless** (**+32.0**), but household emotional abuse (**parent insulted, +31.4**) and **sexual dating violence** (**+31.3**) rise to sit almost as high, suggesting household-based emotional abuse becomes more prominent at this stage. **Basic needs met** (**-12.2**) overtakes **connectedness** (**-10.5**) as the strongest protective factor for this outcome.
+
+
+![](outcomes/chart_QN28.png)
+
+
+**Attempted Outcome**: in this outcome, there's a shift as **sad/hopeless** drops out of the top three entirely, and is replaced by physical household violence at the top (**parent hit**, **+31.5**; **parents hit each other**, **+30.6**), with **adult sexual abuse** still prominent (**+29.8**). The factors most strongly co-occurring with attempt behavior lean more toward physical, not emotional, household violence. **Basic needs met** remains the strongest protective factor (-11.3), followed by parental monitoring (**-8.2**).
+
+![](outcomes/chart_QN29.png)
+
+
+**Injurious Attempt Outcome**: here, **unstable housing** (**+14.1**), a factor that wasn't in the top three for any other outcome, leads alongside continued household violence. The gaps for this outcome are substantially smaller in magnitude than for the other three (**a maximum of +14.1**, versus +40.1 for ideation), consistent with it being the **rarest** and **most severe outcome** in the suicide pathway. The protective side shrinks correspondingly: **basic needs met** (**-4.7**) and **monitoring** (**-2.8**) are both far smaller here than their equivalents for any other outcome.
+
+![](outcomes/chart_QN30.png)
+
+
+## 5.3 Headline Findings
+
+Across all four outcomes, the factors showing the strongest associations varied by stage. For suicidal ideation and planning, students who reported **persistent sadness or hopelessness**, or who had **experienced sexual violence or abuse**, showed markedly **higher rates of these outcomes** than students who had not. These experiences may affect multiple domains of an adolescent's life rather than being confined to one setting. For attempts, particularly those resulting in injury, students who had experienced physical violence within the household, including being **hit by a parent** or **witnessing parents hit each other**, showed **higher rates** than students who had not. For injurious attempts specifically, students who had **experienced unstable housing** also showed a **higher rate**, pointing to the relevance of home environment and physical security at the more severe end of the pathway.
+
+A comparable pattern was observed for protective factors. Students who reported **feeling connected to their school** showed a markedly **lower** rate of suicidal ideation than those who did not, making **school connectedness the strongest protective factor for this outcome**. For suicide planning, attempts, and attempts resulting in injury, **students whose basic needs were met by an adult showed the strongest or second strongest protective gap** compared to those whose needs were not consistently met. **Having basic needs met was therefore the most consistently protective factor across all four outcomes**, although the size of this gap declined substantially at the most severe stage, from a 12.2 percentage point difference for suicide planning to 4.7 percentage points for attempts resulting in injury.
+
+Across all four outcomes, the **magnitude of the largest observed protective association was smaller than that of the largest adverse association for the corresponding outcome**. Moreover, this difference became narrower for the less prevalent and more severe outcomes. These patterns should, however, be interpreted as associations rather than causal relationships. Given the cross-sectional and self-reported nature of the data, the findings identify patterns of co-occurrence between experiences and suicidality outcomes but cannot establish that any individual factor causes or prevents a particular outcome.
+
+
+# 6. Key Findings
+
+- **Effect size (percentage-point gaps)** was prioritised over p-values because the large sample (N=20,103) makes statistical significance alone less informative about substantive importance.
+
+- **Adverse and protective factors showed severity-dependent patterns**: psychological distress and sexual violence were most strongly associated with ideation and planning, while household violence and unstable housing were more prominent for attempts and injury. Basic needs met was the most consistently protective factor, although its association weakened at greater severity. Protective associations were consistently smaller than adverse associations, with this difference narrowing for rarer outcomes.
+
+- **Protective factors were generally prevalent**: basic needs met (86.3%), parental monitoring (84.0%), good grades (72.1%), and school connectedness (55.3%) were reported by over half of participants; sufficient sleep was less common (23.2%). Their relevance lies in their association with suicidality, rather than their prevalence.
+
+- **Weight status showed little association with suicidality**, consistent with research suggesting BMI category is a weaker correlate than perceived weight and weight-based teasing, which were not directly measured in the survey.
+
+- **The analysis was externally validated**: all four outcome prevalence estimates matched the CDC's published figures for the 2023 YRBS, while unadjusted prevalence ratios for four protective factors closely mirrored the CDC's adjusted estimates from the same dataset.
+
+- **Sex showed the strongest demographic pattern**: female students reported approximately twice the prevalence of male students across all four outcomes: ideation (27.1% vs. 14.1%), planning (21.2% vs. 11.8%), attempts (12.6% vs. 6.4%), and injurious attempts (3.3% vs. 1.4%), consistent with longstanding YRBS findings.
+
+- **Race and ethnicity were significantly associated with ideation and attempts, but not planning or injurious attempts**. AI/AN students generally had the highest or near-highest prevalence, consistent with national evidence. Wider confidence intervals for AI/AN and NH/PI groups reflect smaller subgroup sample sizes and greater estimate uncertainty.
+
+
+# 7. Limitations
+
+-	**Cross-sectional, self-reported data**: Findings indicate co-occurrence, not causation or prevention.
+
+-	**Subgroup uncertainty**: AI/AN, NH/PI, and the youngest age/lowest grade groups had wider confidence intervals, reflecting smaller sample sizes.
+
+-	**Missing data**: Per-comparison exclusion was not tested against alternative approaches, so the sensitivity of findings to missing-data assumptions is unknown.
+
+-	**Variable coverage**: Sexual and gender identity were outside the analysis scope, while the null association for weight status may reflect the absence of measures capturing perceived weight and weight-based teasing.
+
+
+# 8. Future Direction and Next Research Question
+
+Three priorities emerge for further analysis:
+
+-	**Robustness testing**: Re-estimate key findings under alternative missing-data assumptions, such as complete-case analysis.
+
+-	**Multivariable modelling**: Adjust for demographic and other potential confounders, consistent with the CDC's companion analysis.
+
+-	**Expanded equity analysis**: Incorporate sexual and gender identity using the raw survey data and appropriate recoding.
+
+This leads to a central research question: **Do the strength of key co-occurrence associations, rather than only outcome prevalence, vary across sex and racial/ethnic groups?** For example, does the association between sadness/hopelessness and suicidal ideation remain consistent across demographic subgroups, or is it concentrated within populations?
+
+# 9. References
+
+Ammerman, B.A., Steinberg, L. and McCloskey, M.S. (2018) “Risk-Taking Behavior and Suicidality: The Unique Role of Adolescent Drug Use,” Journal of clinical child and adolescent psychology: the official journal for the Society of Clinical Child and Adolescent Psychology, American Psychological Association, Division 53, 47(1), pp. 131–141. Available at: https://doi.org/10.1080/15374416.2016.1220313.
+
+Baiden, P. et al. (2022) “Perceived racial discrimination and suicidal behaviors among racial and ethnic minority adolescents in the United States: Findings from the 2021 adolescent behaviors and experiences survey,” Psychiatry Research, 317, p. 114877. Available at: https://doi.org/10.1016/j.psychres.2022.114877.
+
+Baiden, P. et al. (2024) Exposure to Neighborhood Violence and Gun Carrying Among Adolescents in the United States: Findings From A Population-Based Study. Available at: https://doi.org/10.1177/08862605241231616.
+
+Baiden, P., Mengo, C. and Small, E. (2021) “History of Physical Teen Dating Violence and Its Association With Suicidal Behaviors Among Adolescent High School Students: Results From the 2015 Youth Risk Behavior Survey,” Journal of Interpersonal Violence, 36(17–18), pp. NP9526–NP9547. Available at: https://doi.org/10.1177/0886260519860087.
+
+Bakken, V. et al. (2025) “Protective factors for suicidal ideation and suicide attempts in adolescence: a longitudinal population-based cohort study examining sex differences,” BMC Psychiatry, 25(1), p. 106. Available at: https://doi.org/10.1186/s12888-025-06552-6.
+
+Borges, G., Bagge, C.L. and Orozco, R. (2016) “A literature review and meta-analyses of cannabis use and suicidality,” Journal of Affective Disorders, 195, pp. 63–74. Available at: https://doi.org/10.1016/j.jad.2016.02.007.
+
+Borowsky, I.W., Ireland, M. and Resnick, M.D. (2001) “Adolescent suicide attempts: risks and protectors,” Pediatrics, 107(3), pp. 485–493. Available at: https://doi.org/10.1542/peds.107.3.485.
+
+Dittus, P.J. et al. (2023) “Parental Monitoring and Risk Behaviors and Experiences Among High School Students — Youth Risk Behavior Survey, United States, 2021,” MMWR Supplements, 72(1), pp. 37–44. Available at: https://doi.org/10.15585/mmwr.su7201a5.
+
+Dworkin, E.R., DeCou, C.R. and Fitzpatrick, S. (2022) “Associations between sexual assault and suicidal thoughts and behavior: A meta-analysis,” Psychological Trauma: Theory, Research, Practice, and Policy, 14(7), pp. 1208–1211. Available at: https://doi.org/10.1037/tra0000570.
+
+Felitti, V.J. et al. (1998) “Relationship of Childhood Abuse and Household Dysfunction to Many of the Leading Causes of Death in Adults: The Adverse Childhood Experiences (ACE) Study,” American Journal of Preventive Medicine, 14(4), pp. 245–258. Available at: https://doi.org/10.1016/S0749-3797(98)00017-8.
+
+Fonseca-Pedrero, E. et al. (2022) “Risk and Protective Factors in Adolescent Suicidal Behaviour: A Network Analysis,” International Journal of Environmental Research and Public Health, 19(3), p. 1784. Available at: https://doi.org/10.3390/ijerph19031784.
+
+Graham, C. and Frisco, M. (2022) “The relationship between obesity and suicide ideation among young adults in the United States,” SSM - Population Health, 18, p. 101106. Available at: https://doi.org/10.1016/j.ssmph.2022.101106.
+
+Haghish, E.F. et al. (2024) “Unveiling Adolescent Suicidality: Holistic Analysis of Protective and Risk Factors Using Multiple Machine Learning Algorithms,” Journal of Youth and Adolescence, 53(3), pp. 507–525. Available at: https://doi.org/10.1007/s10964-023-01892-6.
+
+Hamilton, J.L. et al. (2023) “Sleep influences daily suicidal ideation through affective reactivity to interpersonal events among high-risk adolescents and young adults,” Journal of Child Psychology and Psychiatry, 64(1), pp. 27–38. Available at: https://doi.org/10.1111/jcpp.13651.
+
+Holt, M.K. et al. (2015) “Bullying and Suicidal Ideation and Behaviors: A Meta-Analysis,” Pediatrics, 135(2), pp. e496–e509. Available at: https://doi.org/10.1542/peds.2014-1864.
+
+Hughes, K. et al. (2017) “The effect of multiple adverse childhood experiences on health: a systematic review and meta-analysis,” The Lancet Public Health, 2(8), pp. e356–e366. Available at: https://doi.org/10.1016/S2468-2667(17)30118-4.
+
+Kagawa, R.M.C. et al. (2019) “Psychiatric Disorders and Gun Carrying among Adolescents in the United States,” The Journal of Pediatrics, 209, pp. 198–203. Available at: https://doi.org/10.1016/j.jpeds.2019.01.010.
+
+Klinitzke, G. et al. (2013) “Obesity and suicide risk in adults—A systematic review,” Journal of Affective Disorders, 145(3), pp. 277–284. Available at: https://doi.org/10.1016/j.jad.2012.07.010.
+
+Lee, M.-S. and Lee, H. (2023) “Associations between binge drinking experience, depressive mood, and suicidality in adolescents: Based on the 2021 Korea Youth Risk Behavior Web-based Survey,” Journal of Affective Disorders, 323, pp. 386–391. Available at: https://doi.org/10.1016/j.jad.2022.11.086.
+
+Lindsey, M.A. et al. (2019) “Trends of Suicidal Behaviors Among High School Students in the United States: 1991–2017,” Pediatrics, 144(5), p. e20191187. Available at: https://doi.org/10.1542/peds.2019-1187.
+
+Liu, J. et al. (2017) “Associations between suicidal behavior and childhood abuse and neglect: A meta-analysis,” Journal of Affective Disorders, 220, pp. 147–155. Available at: https://doi.org/10.1016/j.jad.2017.03.060.
+
+Macková, J. et al. (2021) “The Association of Family-Related Adversity With Fighting in Adolescents: Does Hopelessness Mediate This Association?,” International Journal of Public Health, 66, p. 607199. Available at: https://doi.org/10.3389/ijph.2021.607199.
+
+McKinnon, I.I. et al. (2023) “Experiences of Unstable Housing Among High School Students — Youth Risk Behavior Survey, United States, 2021,” MMWR Supplements, 72. Available at: https://doi.org/10.15585/mmwr.su7201a4.
+
+Messias, E., Kindrick, K. and Castro, J. (2014) “School bullying, cyberbullying, or both: Correlates of teen suicidality in the 2011 CDC youth risk behavior survey,” Comprehensive Psychiatry, 55(5), pp. 1063–1068. Available at: https://doi.org/10.1016/j.comppsych.2014.02.005.
+
+Mondin, T.C. et al. (2016) “Sexual violence, mood disorders and suicide risk: a population-based study,” Ciência & Saúde Coletiva, 21, pp. 853–860. Available at: https://doi.org/https://doi.org/10.1590/1413-81232015213.10362015.
+
+Murray, J., Farrington, D.P. and Sekol, I. (2012) “Children’s antisocial behavior, mental health, drug use, and educational performance after parental incarceration: A systematic review and meta-analysis,” Psychological Bulletin, 138(2), pp. 175–210. Available at: https://doi.org/10.1037/a0026407.
+
+Na, P.J. et al. (2025) “Social Determinants of Health and Suicide-Related Outcomes: A Review of Meta-Analyses,” JAMA Psychiatry, 82(4), pp. 337–346. Available at: https://doi.org/10.1001/jamapsychiatry.2024.4241.
+
+Nahapetyan, L. et al. (2014) “Longitudinal Association of Suicidal Ideation and Physical Dating Violence among High School Students,” Journal of Youth and Adolescence, 43(4), pp. 629–640. Available at: https://doi.org/10.1007/s10964-013-0006-6.
+
+Norman, R.E. et al. (2012) “The Long-Term Health Consequences of Child Physical Abuse, Emotional Abuse, and Neglect: A Systematic Review and Meta-Analysis,” PLOS Medicine, 9(11), p. e1001349. Available at: https://doi.org/10.1371/journal.pmed.1001349.
+
+Orozco, R. et al. (2018) “Association between attempted suicide and academic performance indicators among middle and high school students in Mexico: results from a national survey,” Child and Adolescent Psychiatry and Mental Health, 12(1), p. 9. Available at: https://doi.org/10.1186/s13034-018-0215-6.
+
+Peprah, P. et al. (2023) “A moderated mediation analysis of the association between smoking and suicide attempts among adolescents in 28 countries,” Scientific Reports, 13, p. 5755. Available at: https://doi.org/10.1038/s41598-023-32610-8.
+
+Price, J.H. and Khubchandani, J. (2025) “Suicidal Thoughts and Behaviors in American Indian and Alaska Native Adolescents,” Journal of Community Health, 50(2), pp. 227–234. Available at: https://doi.org/10.1007/s10900-024-01411-z.
+
+Rosa-Ramón, E. et al. (2026) “Violent, Psychosocial, and Behavioral Factors Associated with Suicidal Ideation Among High School Students in Puerto Rico: A Cross-Sectional Analysis of the 2019 YRBSS,” Youth, 6(3), p. 90. Available at: https://doi.org/10.3390/youth6030090.
+
+Sanz-Pérez, A. et al. (2026) “Growing Concerns: A systematic review and Meta-Analysis of cannabis use and mental health risks in youth,” Addictive Behaviors, 172, p. 108528. Available at: https://doi.org/10.1016/j.addbeh.2025.108528.
+
+Shalit, N. et al. (2016) “The association between cannabis use and suicidality among men and women: A population-based longitudinal study,” Journal of Affective Disorders, 205, pp. 216–224. Available at: https://doi.org/10.1016/j.jad.2016.07.010.
+
+Stephens, D.N. and Duka, T. (2008) “Cognitive and emotional consequences of binge drinking: role of amygdala and prefrontal cortex,” Philosophical Transactions of the Royal Society B: Biological Sciences, 363(1507), pp. 3169–3179. Available at: https://doi.org/10.1098/rstb.2008.0097.
+
+Sullivan, G.M. and Feinn, R. (2012) “Using Effect Size—or Why the P Value Is Not Enough,” Journal of Graduate Medical Education, 4(3), pp. 279–282. Available at: https://doi.org/10.4300/JGME-D-12-00156.1.
+
+Tunagur, M.T. and Kurt Tunagur, E.M. (2026) “Substance Use and Suicide Attempts in Adolescents: A Comparative Analysis of Clinical and Psychosocial Risk Factors,” Children, 13(2), p. 186. Available at: https://doi.org/10.3390/children13020186.
+
+Verlenden, J. et al. (2024) “Mental Health and Suicide Risk Among High School Students and Protective Factors — Youth Risk Behavior Survey, United States, 2023,” MMWR Supplements, 73. Available at: https://doi.org/10.15585/mmwr.su7304a9.
+
+Wasserstein, R.L. and Lazar, N.A. (2016) “The ASA Statement on p-Values: Context, Process, and Purpose,” The American Statistician, 70(2), pp. 129–133. Available at: https://doi.org/10.1080/00031305.2016.1154108.
+
+Wilkins, N.J. et al. (2023) “School Connectedness and Risk Behaviors and Experiences Among High School Students — Youth Risk Behavior Survey, United States, 2021,” MMWR Supplements, 72. Available at: https://doi.org/10.15585/mmwr.su7201a2.
+
+# 10. Appendix
+
+## 10.1 Tables
+
+**Table A1: Working Dataset**
+```{r Working Dataset}
+reactable(head(analysis_df, 10)) # Loading the new dataset
+
+```
+
+**Table A2: Variable Summary and Missingness Table**
+```{r Variable Summary Table}
+reactable(variable_summary[order(-variable_summary$pct_missing), ], ) # sorted in order of worst
+```
+
+
+**Table A3: Weighted Prevalence of Outcomes Across Sex Table**
+```{r Weighted Prevalence of Outcomes Across Sex}
+reactable(sex_results)
+```
+
+
+**Table A4: Weighted Prevalence of Outcomes Across Race Table**
+```{r Weighted Prevalence of Outcomes Across Race}
+reactable(race_results)
+```
+
+**Table A5: Cross-Tabs Table**
+```{r Cross-Tabs table}
+reactable(cooccurrence_results) # Display the finished table
+```
+
+
+**Table A6: Non-Significant Cross-Tabs**
+```{r Non-Significant Cross-Tabs}
+# show non-significant results
+reactable(all_nonsig)
+```
+
+## 10.2 Justification of Selected Variables
+
+### 10.2.1 Demographics - Jacinta
+
+`q1` (age), `q2` (sex), `q3` (grade), and `raceeth` (race/ethnicity) are included in this analysis as descriptive covariates rather than adverse or protective factors, as they provide context for interpreting the co-occurrence findings in this analysis. Missingness is very low across all four (0.5% to 1.8%), since demographics were asked of every respondent.
+
+![](demographics_missingness.png)
+
+The sample skews toward mid-adolescence, as expected for a grades 9-12 population: weighted composition is concentrated in ages 14 to 18+ (12.1%/25.3%/26.0%/24.4%/11.7%), with ages 12-and-under and 13 negligible (0.2% each). 
+
+![](age_prevalence.png)
+
+Sex is close to evenly split (48.1% female, 51.9% male).
+
+![](sex_prevalence.png)
+
+Grade level is close to evenly distributed across 9th through 12th (26.4%/25.8%/24.2%/23.3%). 
+
+![](grade_prevalence.png)
+
+Race/ethnicity composition is White 48.1%, Multiple-Hispanic/Latino 19.8%, Black 13.3%, Hispanic 7.7%, Asian 4.3%, Multiple-non-Hispanic 6.1%, Native Hawaiian/Pacific Islander 0.4%, and American Indian/Alaska Native 0.3%.
+
+![](race_prevalence.png)
+
+**Suicidality Outcomes by Sex**
+
+![](demo_sex_fixed.png)
+
+Sex shows the strongest and most consistent demographic pattern in this dataset. Female students report significantly higher prevalence than male students across all four outcomes: considered suicide (27.1% compared to 14.1%, p<0.001), made a plan (21.2% compared to 11.8%, p<0.001), attempted (12.6% compared to 6.4%, p<0.001), and injurious attempt (3.3% compared to 1.4%, p<0.001). This roughly two to one ratio holds steady throughout, even as the actual rates drop sharply from ideation to injury. That consistency suggests the sex gap is not tied to any single stage of the pathway, but is a stable feature running through all of it. This matches a well documented national pattern: a YRBS trends study covering 1991 to 2017 (Lindsey *et al*., 2019) found consistently higher rates among female students across nearly three decades of data, and CDC's own 2023 companion analysis of this dataset attributes part of the gap to documented sex differences in academic stress, cultural expectations, social media use, and violence exposure (Verlenden *et al*., 2024).
+
+**Suicidality Outcomes by Race**
+
+![](demo_race_fixed.png)
+
+Race and ethnicity's relationship with these outcomes is not consistent across the pathway. It is statistically significant for considered suicide (p=0.003) and attempted suicide (p=0.008), but not for made a plan (p=0.100) or injurious attempt (p=0.082). American Indian and Alaska Native students show the highest or near highest point estimate across most outcomes, at 24.5% for ideation, 25.7% for plan, and 11.5% for attempt. This matches a broader literature: a 2024 study analyzing national YRBS data found that American Indian and Alaska Native adolescents have the highest suicide rates of any racial or ethnic group in the United States (Price and Khubchandani, 2024). It is worth noting that the American Indian and Alaska Native, and Native Hawaiian and Pacific Islander estimates carry much wider confidence intervals than the other six categories throughout, and this is driven by smaller subgroup sample sizes in this dataset.
+
+
+### 10.2.2 Sexual/dating violence - Destiny
+
+`QN19` through `QN21`, and `QN88`, measure non-consensual sexual experiences, including forced intercourse, sexual violence, dating-related sexual violence, and adult sexual abuse, and are classified as adverse experiences. Weighted prevalence is 8.6% for forced intercourse, 11.4% for sexual violence, 5.9% for sexual dating violence, and 7.2% for adult sexual abuse.
+
+![](sexual_prevalence.png)
+
+Evidence consistently links these experiences to elevated suicide risk. Sexual violence has been associated with 2.8 times higher lifetime suicide risk (Mondin *et al*., 2016, Brazil, N=1,560) and a near three-fold gap in suicidality prevalence between assaulted and unassaulted groups, 27.25% versus 9.37% (Dworkin *et al*., 2020, meta-analysis, N=88,376), with sexual assault identified among the strongest suicide-attempt risk factors in a review of meta-analyses (Na *et al*., 2025). Physical dating violence was associated with 1.67 to 2.42 times higher odds of ideation, plan, and attempt (Baiden *et al*., 2019, N=9,693), and a 79-study meta-analysis found sexual abuse associated with 3.41 times higher odds of suicide attempts (N=337,185, Angelakis *et al*., 2020).
+
+![](sexual_missingness.png)
+
+Missingness across these variables ranges from 13.9% to 33.1% The comparatively higher missingness on QN21 is structural, since the question was only presented to students who reported dating in the past 12 months.
+
+
+### 10.2.3 Protective factors - Aliya
+
+`QN85`, `QN87`, `QN99`, `QN103`, and `QN104` measure sufficient sleep, grades, basic needs met, school connectedness, and parental monitoring, and are classified as protective factors. Weighted prevalence is 23.2% for sleep, 72.1% for grades, 86.3% for basic needs met, 55.3% for connectedness, and 84.0% for monitoring. Four of the five sit above 50%, confirming these protective factors are the norm in this population rather than the exception.
+
+![](protective_prevalence.png)
+
+Four of the five, sleep, basic needs met, connectedness, and monitoring, are exactly the protective factors CDC selected in its own companion analysis of this dataset (Verlenden *et al*., 2024), using the same design-based weighting approach used here. CDC found each associated with lower prevalence across all four indicators, with adjusted prevalence ratios of 0.53 to 0.67 for sleep, 0.41 to 0.80 for basic needs met, 0.63 to 0.70 for connectedness, and 0.51 to 0.74 for monitoring. This analysis's own unadjusted ratios closely mirror these, at 0.48 to 0.49, 0.23 to 0.66, 0.52 to 0.56, and 0.34 to 0.66 respectively, providing external validation against CDC's published results. Poor sleep has also been linked to daily suicidal ideation via affective reactivity in high-risk adolescents (Hamilton *et al*., 2023), and connectedness and monitoring are each the subject of CDC's own dedicated 2021 YRBS reports (Wilkins *et al*., 2023; Dittus *et al*., 2023).
+
+Grades is not one of CDC's selected factors and is the least consistently supported of the five. A Mexican national survey found fair or poor grades associated with over twice the odds of a suicide attempt among middle school students specifically (OR=2.35, n=14,435; Orozco *et al*., 2018), compared to those with very good performance. A review by Borowsky *et al*. (2001) found GPA linked to fewer attempts for Hispanic boys specifically (OR=0.15), but not for girls.
+
+
+![](protective_missingness.png)
+
+Missingness ranges from 13.2% for sleep to 46.0% for monitoring. Sleep, basic needs met, and grades all run low to moderate, between 13.2 and 21.7%, while connectedness and monitoring are noticeably higher, at 44.4 and 46.0%.
+
+Unlike the other variable clusters, protective factors can be checked directly against CDC's own published estimates for this exact dataset (Verlenden *et al*., 2024), which report prevalence ratios. This section therefore uses the same metric specifically to enable that comparison.
+
+
+### 10.2.4 School/community adversity - Albert
+
+`QN22` through `QN25`, and `QN86`, measure school and community-based adverse experiences, including physical dating violence, racial/ethnic discrimination, in-person bullying, electronic bullying, and unstable housing, and are classified as adverse experiences. Weighted prevalence is 10.4% for physical dating violence, 31.5% for discrimination, 19.2% for bullying, 16.3% for electronic bullying, and 3.3% for unstable housing.
+
+![](community_prevalence.png)
+
+Physical dating violence has been consistently linked to elevated suicidal thoughts and behaviours in nationally representative YRBS samples: students with a history of physical dating violence were 1.92 times more likely to report suicidal ideation, 1.67 times more likely to have made a plan, and 2.42 times more likely to have attempted suicide (Baiden *et al*., 2019). Longitudinal work by Nahapetyan *et al*. (2013) similarly found physical dating violence victimisation predicted suicidal ideation across grades 9-12. 
+Baiden *et al*. (2022) found that perceived racial discrimination in school was significantly associated with suicidal ideation, planning, and attempts among racial and ethnic minority adolescents in an analysis of the CDC's 2021 Adolescent Behaviors and Experiences Survey. 
+
+Bullying, in person, electronic or both, has been strongly associated with sadness and suicidality, with the highest odds observed for students experiencing both forms (Messias *et al*., 2014). Holt *et al*. (2015) confimed this pattern in a meta-analysis which found tht bullying involvement, as a victim, perpetrator, or both, was associated with suicidal ideation and attempts. Similarly, Bauman *et al*. (2013) found cyberbullying independently predicted suicide-related outcomes even after accounting for traditional bullying and depressive symptoms.
+
+Housing instability, added to the national YRBS for the first time in 2021, was reported by only 2.7% of US high school students, but these students showed substantially higher rates of suicidal ideation and attempts than stably housed peers (McKinnon *et al*., 2023).
+
+![](community_missingness.png)
+
+Missingness across these five variables ranges from 1.0% (bullying) to 42.8% (physical dating violence). The higher missingness on `QN22` is structural, since the question is only presented to students who reported dating in the past 12 months.
+
+
+### 10.2.5 Household dysfunction - Terence
+
+`QN89` through `QN91` and `QN100` through `QN102` measure household dysfunction (verbal and emotional abuse, physical abuse, domestic violence between household adults, parental substance use, parental mental illness or suicidality, and separation due to parental incarceration), and are classified as adverse experiences drawn directly from the original adverse childhood experiences (ACE) framework. 
+
+![](household_prevalence.png)
+
+Weighted prevalence ranges widely: verbal abuse affects 11.3% of students, while physical abuse and witnessed domestic violence are considerably rarer at 2.4% and 2.0%. 
+
+A meta-analysis of longitudinal studies found childhood emotional abuse significantly increased suicidal ideation and attempt risk, with odds ratios ranging from 1.5 to over 3.0 (Liu *et al*, 2017). Physical abuse specifically has been linked to two to three times higher odds of ideation and attempts even after adjusting for mental health conditions (Miller *et al*., 2013; Norman *et al*., 2012). Witnessing domestic violence between household adults was one of the original ACE Study's core exposures, substantially increasing lifetime suicide attempt risk (Felitti *et al*., 1998), a finding replicated in later adolescent-focused research (Hughes *et al*., 2017).
+
+Parental substance use and parental mental illness or suicidality are considerably more common, at 24.8% and 28.5%, while parental incarceration sits in between at 14.4% .Household substance abuse was independently associated with a two to three times increase in lifetime suicide attempt odds in the original ACE Study (Felitti *et al*., 1998), later confirmed in meta-analyses controlling for sociodemographic factors (Hughes *et al*., 2017). 
+
+Living with a parent who had a mental illness or was suicidal roughly doubled attempt odds in the same original study. Parental incarceration, a severe attachment disruption, has been linked to elevated rates of suicidal thoughts and self-harm in a dedicated meta-analysis conducted by Murray *et al*., (2012).
+
+![](household_missingness.png)
+
+Missingness across all six variables is high and unusually uniform, ranging from 30.8% to 34.2%.
+
+
+### 10.2.6 Violence-adjacent & mental distress - Francis
+
+`QN12`, `QN13`, `QN16`, `QN26`, and `QN84` measure weapon carrying, gun carrying, physical fighting, persistent sadness/hopelessness, and poor mental health respectively. Weighted prevalence is 4.2% for weapon carrying, 3.5% for gun carrying, 19.2% for physical fighting, 39.7% for sadness/hopelessness, and 28.5% for poor mental health.
+
+![](distress_prevalence.png)
+
+Weapon and gun carrying show a recurring pattern in the literature: significant at the bivariate level, but not independent of broader risk factors. Rosa-Ramón *et al*. (2026) found weapon carrying significantly associated with suicidal ideation unadjusted (OR=2.18) and adjusted for sex and age (AOR=2.90), but the association disappeared once sadness/hopelessness, bullying, and cigarette use were added to the model. Baiden *et al*. (2024) found the same pattern for gun carrying using items worded identically to `QN13`, `QN26`, and `QN84`: significant bivariate associations with sadness/hopelessness and poor mental health that did not survive adjustment for neighborhood violence, victimisation, and substance use.
+
+Kagawa *et al*. (2019) found a closely aligned gun-carrying prevalence (2.4%) to the 3.5% of gun-carrying prevalence in this study, in a sample where gun carriers had significantly higher rates of conduct disorder, drug use disorder, and specific phobias, and that nearly two-thirds (65%) of adolescents who carried a gun met criteria for at least one psychiatric disorder. 
+
+Macková *et al*. (2021) found family-related adversity associated with more frequent fighting, an association significantly mediated by hopelessness.
+
+![](distress_missingness.png)
+
+Missingness ranges from 1.2% (sadness/hopelessness) to 43.4% (gun carrying). Sadness/hopelessness and weapon carrying are both low (1.2%, 2.5%), poor mental health sits in the middle (21.9%), and gun carrying and physical fighting are both noticeably higher (43.4%, 42.0%).
+
+
+### 10.2.7 Substance use & weight status - Bernard
+
+`QN43`, `QN48`, `qnillict` and `qntb4` measure binge drinking, current marijuana use, illicit drug use, and current use of any tobacco product respectively, and are classified as health/behaviour correlates rather than adverse experiences. Weighted prevalence is 8.8%, 17.0%, 9.9%, and 17.9% across the variables respectively. 
+
+![](substance_prevalence.png)
+
+Evidence links binge drinking to suicidal ideation through impaired emotional regulation, with studies reporting adolescent binge drinkers up to 12.6 times more likely to report ideation (Stephens and Duka, 2008; Lee and Lee, 2023).
+
+The evidence on marijuana use shows real heterogeneity by dose and population. A 2025 systematic review and meta-analysis by Sanz-Perez *et al*. (ages 15 to 30) found cannabis use associated with a 50 to 65% increase in suicidal ideation odds, and an 80 to 87% increase in suicide attempt odds. This is consistent with, though more precise than, Borges *et al*. (2016) report on cannabis health effects, which found any use associated with higher odds of suicidal ideation and heavy use with a larger increase across a set of pooled studies. However, a large single study by Shalit *et al*. (2016), with 34,653 participants, found no significant association in the general population, with the effect emerging only among men and specifically among daily users.
+
+Tobacco use has been linked to elevated suicidal ideation risk across age groups generally, with a 28-country moderated mediation analysis finding a direct positive relationship between adolescent cigarette smoking and suicide attempts specifically (Peprah *et al*., 2023).
+
+Among substance-using adolescents in clinical treatment in Türkiye, high-frequency polysubstance use significantly differentiated those with a suicide attempt history from those without (Tunagur and Tunagur, 2026). In a general population, Ammerman *et al*. (2018) found illicit drug use the only risk behavior remaining significant once tobacco, alcohol, risky sex, delinquency, and violence were examined together, though its relationship with future suicidal thoughts reversed to negative in that fully adjusted model.
+
+BMI's relationship with suicidality depends on which outcome is measured. Weighted prevalence is 14.7% for overweight (`qnowt`) and 15.9% for obese (`qnobese`). A prospective meta-analysis found higher BMI linked to lower suicide mortality and attempts, but higher suicidal ideation specifically (Klinitzke *et al*., 2013). Li and Zou (2026) found that among professional women, overweight or obesity raised ideation odds under 35, with an odds ratio of 1.62, but not after. Graham and Frisco (2022), in a nationally representative young-adult study, found no link in either sex, and overweight young men actually showed lower odds than normal-weight men.
+
+![](substance_missingness.png)
+
+Missingness ranges from 2.5% for marijuana to 45.7% for illicit drug use, the highest in this cluster. Binge drinking's comparatively higher missingness is structural, since the question was only presented to students who reported drinking alcohol at least once in the past 30 days.
